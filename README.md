@@ -1,10 +1,18 @@
-# module-conf-updater
+# update_module_confs
 
 A script that adds newly added configuration options after a module update.
 
+About This Project
+update_module_confs is designed specifically for users of AzerothCore and similar MMORPG emulation software that utilize .conf configuration files. This script automates the process of updating module configuration files by detecting and appending any new configuration options introduced during module updates. It helps server administrators keep their configuration files up to date without losing customized settings.
+
+Key Features
+AzerothCore & TrinityCore Support: Works seamlessly with config files used by AzerothCore, TrinityCore, and other related emulation projects.
+Automatic Detection: Finds newly added module config options and appends them to your existing .conf files.
+Preserves Custom Settings: Ensures your customizations remain intact while keeping configuration files current.
+
 ## Overview
 
-**module-conf-updater** is a Python script designed to help you keep your configuration files up-to-date when upgrading to new versions of software modules. It automatically detects configuration options that have been introduced in an updated version and ensures they are added to your existing configuration file—without overwriting your custom settings.
+**update_module_confs** is a Python script designed to help you keep your configuration files up-to-date when upgrading to new versions of software modules. It automatically detects configuration options that have been introduced in an updated version and ensures they are added to your existing configuration file—without overwriting your custom settings.
 
 This tool is particularly useful for system administrators and developers who regularly update modules and need a reliable way to merge new default options into their custom configuration files.
 
@@ -57,7 +65,7 @@ This tool is particularly useful for system administrators and developers who re
 ## Usage
 
 ```bash
-python3 module-conf-updater.py \
+python3 update_module_confs.py \
   --current path/to/your/config.conf \
   --updated path/to/new/default.conf \
   [--output path/to/updated/config.conf] \
@@ -76,7 +84,7 @@ python3 module-conf-updater.py \
 **Example:**
 
 ```bash
-python3 module-conf-updater.py --current /etc/myapp/config.conf --updated ./defaults/config.conf --backup --diff
+python3 update_module_confs.py --current /etc/myapp/config.conf --updated ./defaults/config.conf --backup --diff
 ```
 
 ---
@@ -105,7 +113,7 @@ Use shell scripting to run the updater across multiple config pairs in one step:
 
 bash
 for dir in $(ls /etc/myapps); do
-  python3 module-conf-updater.py --current /etc/myapps/$dir/config.conf --updated ./defaults/config.conf --backup
+  python3 update_module_confs.py --current /etc/myapps/$dir/config.conf --updated ./defaults/config.conf --backup
 done
 Output Customization
 Change Markers:
