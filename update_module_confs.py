@@ -15,7 +15,8 @@ def prompt_module_selection(dist_files):
     print("\nOptions:")
     print("  A: Update all modules")
     print("  B: Select modules individually")
-    choice = input("Select an option (A/B): ").strip().lower()
+    print("  Q: Quit")
+    choice = input("Select an option (A/B/Q): ").strip().lower()
     selected = []
     if choice == "a":
         selected = dist_files
@@ -23,8 +24,10 @@ def prompt_module_selection(dist_files):
         nums = input("Enter numbers of modules to update (comma-separated): ").strip()
         indices = [int(x)-1 for x in nums.split(",") if x.strip().isdigit() and 0 < int(x) <= len(dist_files)]
         selected = [dist_files[i] for i in indices]
+    elif choice == "q":
+        return None  # signal to quit
     else:
-        print("Invalid selection, exiting.")
+        print("Invalid selection, returning to menu.")
     return selected
 
 def backup_file(filepath):
@@ -59,15 +62,15 @@ def find_missing_keys(dist_conf, user_conf):
 def update_conf(dist_path, conf_path):
     if not os.path.exists(conf_path):
         print(f"  User config {conf_path} does not exist, skipping.")
-        return
-    backup_file(conf_path)
+        return False
     dist_conf = parse_conf(dist_path)
     user_conf = parse_conf(conf_path)
     missing = find_missing_keys(dist_conf, user_conf)
     if not missing:
         print("  No new config options to add.")
-        return
-    
+        return False
+    backup_file(conf_path)  # Only make a backup if changes are needed!
+    updated = False
     with open(conf_path, "a", encoding="utf-8") as f:
         for key, (line, comments) in missing.items():
             print("\n" + "".join(comments if comments else []) + line, end="")
@@ -77,25 +80,36 @@ def update_conf(dist_path, conf_path):
                     f.writelines(comments)
                 f.write(line)
                 print(f"    Added {key}.")
+                updated = True
             else:
                 print(f"    Skipped {key}.")
+    return updated
 
-def main(modules_dir):
-    dist_files = find_modules(modules_dir)
-    if not dist_files:
-        print("No .conf.dist files found in the specified folder.")
-        return
-    selected = prompt_module_selection(dist_files)
-    if not selected:
-        print("No modules selected. Exiting.")
-        return
-    for dist_fname in selected:
-        module = dist_fname[:-5]  # Removes ".dist"
-        conf_fname = module  # e.g., mod_x.conf
-        dist_path = os.path.join(modules_dir, dist_fname)
-        conf_path = os.path.join(modules_dir, conf_fname)
-        print(f"\nProcessing {conf_fname} ...")
-        update_conf(dist_path, conf_path)
+def main_menu_loop(modules_dir):
+    while True:
+        dist_files = find_modules(modules_dir)
+        if not dist_files:
+            print("No .conf.dist files found in the specified folder.")
+            break
+        selected = prompt_module_selection(dist_files)
+        if selected is None:
+            print("Goodbye!")
+            break
+        if not selected:
+            print("No modules selected. Returning to menu.")
+            continue
+        for dist_fname in selected:
+            module = dist_fname[:-5]  # Removes ".dist"
+            conf_fname = module  # e.g., mod_x.conf
+            dist_path = os.path.join(modules_dir, dist_fname)
+            conf_path = os.path.join(modules_dir, conf_fname)
+            print(f"\nProcessing {conf_fname} ...")
+            update_conf(dist_path, conf_path)
+        print("\nReturn to module selection menu?")
+        again = input("Press Enter to continue or type Q to quit: ").strip().lower()
+        if again == "q":
+            print("Goodbye!")
+            break
 
 if __name__ == "__main__":
     print("AzerothCore Module Config Updater")
@@ -106,4 +120,4 @@ if __name__ == "__main__":
     if not os.path.isdir(folder):
         print("Provided path is not a valid directory.")
     else:
-        main(folder)
+        main_menu_loop(folder)
